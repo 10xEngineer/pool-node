@@ -40,11 +40,12 @@ command :prepare do |c|
     count = options.count.to_i
 
     uuid = UUID.new
-    count.times do 
+    # TODO re-introduce multiple operations
+    #count.times do 
       # prepare individual VMs
       id = uuid.generate
 
-      puts "Generating VM '#{id}'"
+      puts "Generating VM '#{id}'" unless $json
 
       cmd = "/usr/bin/sudo /usr/bin/lxc-create -t #{options.template} -n v-#{id} -B lvm --fssize #{options.size} --vgname #{options.vgname}"
       TenxEngineer::External.execute(cmd) do |l|
@@ -55,12 +56,13 @@ command :prepare do |c|
 
       open("#{TenxEngineer::Node::ROOT}/data_bags/vms/#{id}.json", "w") { |f| f << vm.to_json }
 
-      # TODO data bag location / default per machine ~/mchammer/data_bags?
-      # TODO save as data bag item
+      puts vm.to_json if $json
 
       # options sleep (default to 0 ~ no sleep)
-      sleep options.sleep.to_i
-    end
+      #sleep options.sleep.to_i
+    #end
+
+    
 
   end
 end
