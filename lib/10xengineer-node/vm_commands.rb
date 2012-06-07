@@ -1,7 +1,9 @@
+require '10xengineer-node/external'
+require '10xengineer-node/vm'
 require 'logger'
 require 'net/ssh'
 require 'uuid'
-require '10xengineer-node/external'
+require 'lvm'
 
 log = Logger.new(STDOUT)
 log.level = Logger::WARN
@@ -27,6 +29,8 @@ command :prepare do |c|
 
     abort "Template not recognized (#{options.template})" unless templates.include?(options.template)
 
+    abort "Volume group '#{options.vgname}' does not exists!" unless TenxEngineer::Node.volume_group(options.vgname)
+
     count = options.count.to_i
 
     uuid = UUID.new
@@ -37,6 +41,7 @@ command :prepare do |c|
       puts "Generating VM '#{id}'"
 
       cmd = "/usr/bin/sudo /usr/bin/lxc-create -t #{options.template} -n v-#{id} -B lvm --fssize #{options.size} --vgname #{options.vgname}"
+
       puts cmd
 
       TenxEngineer::External.execute(cmd) do |l|
@@ -46,11 +51,13 @@ command :prepare do |c|
 
       vm = TenxEngineer::Node::VM.new(id, :prepared, nil, options.template, {:fs => {:size => options.size}})
 
-      # FIXME create databag item (for management)
-      # TODO data bag location
+      # FIXME ---- create databag item (for management)
+      # TODO hardcoded node root location
+
+      open("#{TenxEngineer::Node::ROOT}/data_bags/vms/#{id}.json", "w") { |f| f << vm.to_json }
+
+      # TODO data bag location / default per machine ~/mchammer/data_bags?
       # TODO save as data bag item
-
-
 
       # options sleep (default to 0 ~ no sleep)
       sleep options.sleep.to_i

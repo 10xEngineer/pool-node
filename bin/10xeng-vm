@@ -20,4 +20,8 @@ default_command :help
 # load commands
 require '10xengineer-node/vm_commands'
 
+unless File.exists? TenxEngineer::Node::ROOT
+  abort "10xEngineer root (#{TenxEngineer::Node::ROOT}) does not exists!"
+end
+
 Commander::Runner.instance.run!

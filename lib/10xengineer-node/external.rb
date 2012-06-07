@@ -20,7 +20,7 @@ module TenxEngineer
 
       if stat.exited?
         if stat.exitstatus > 0
-          raise CommandFailure, "Error (#{stat.exitstatus}): #{error}"
+          raise CommandFailure, "Error (#{stat.exitstatus}): #{output[0]}"
         end
       elsif stat.signaled?
         raise CommandFailure, "Error - signal (#{stat.termsig}) and terminated."

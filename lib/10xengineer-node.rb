@@ -3,6 +3,9 @@ require "10xengineer-node/version"
 require 'commander'
 require 'commander/delegates'
 
+require "10xengineer-node/shared"
+require "10xengineer-node/lvm"
+
 #
 # snippet from commander:lib/commander/import.rb needed when manually calling
 # run! instead of relying on at_exit { run! } (sic!).
