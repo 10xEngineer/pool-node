@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+begin
+  require '10xengineer-node'
+rescue LoadError
+  txe_path = File.expand_path('../../lib', __FILE__)
+
+  $:.unshift(vmaster_path)
+
+  require '10xengineer-node'
+end
+
+program :name, "10xeng-node"
+program :version, TenxEngineer::Node::VERSION
+program :description, "10xEngineer hostnode management toolchain"
+program :help_formatter, :compact
+
+default_command :help
+
+Commander::Runner.instance.run!
