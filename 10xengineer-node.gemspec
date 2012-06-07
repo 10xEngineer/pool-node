@@ -21,6 +21,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency "uuid", "~> 2.3.5"
   gem.add_dependency "open4", "~> 1.3.0"
   gem.add_dependency "di-ruby-lvm", "~> 0.1.3"
+  gem.add_dependency "yajl-ruby", "~> 1.1.0"
 
   gem.add_development_dependency "rspec", "~> 2"
   gem.add_development_dependency "simplecov"

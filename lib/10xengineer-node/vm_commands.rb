@@ -44,7 +44,12 @@ command :prepare do |c|
         puts "-> #{l}"
       end
 
+      vm = TenxEngineer::Node::VM.new(id, :prepared, nil, options.template, {:fs => {:size => options.size}})
+
       # FIXME create databag item (for management)
+      # TODO data bag location
+      # TODO save as data bag item
+
 
 
       # options sleep (default to 0 ~ no sleep)
