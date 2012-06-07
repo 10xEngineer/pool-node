@@ -17,4 +17,7 @@ program :help_formatter, :compact
 
 default_command :help
 
+# load commands
+require '10xengineer-node/vm_commands'
+
 Commander::Runner.instance.run!
