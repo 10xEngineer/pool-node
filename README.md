@@ -27,4 +27,8 @@ Or install it yourself as:
 
 TODO: Write usage instructions here
 
+## Misc notes
 
+TODO: create custom lxc-create (either shell or ruby based) for better output handling, flow control and recovery
+TODO: all subcommands/scripts should follow same output structure
+TODO: log all output to node log stream

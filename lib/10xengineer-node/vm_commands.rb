@@ -1,5 +1,6 @@
 require '10xengineer-node/external'
 require '10xengineer-node/vm'
+require 'pathname'
 require 'logger'
 require 'net/ssh'
 require 'uuid'
@@ -24,8 +25,13 @@ command :prepare do |c|
     options.default :sleep => 0
     options.default :vgname => "lxc"
 
-    # TODO hardcoded list of available templates
-    templates = ["ubuntu", "ubuntu_1204-1", "ubuntu_hercules-1204-1"]
+    # get list of templates
+    templates = []
+
+    lxc_templates = "/usr/lib/lxc/templates/lxc-*"
+    Dir.glob(lxc_templates).each do |f|
+       templates << Pathname.new(f).basename.to_s.delete("lxc-")
+    end
 
     abort "Template not recognized (#{options.template})" unless templates.include?(options.template)
 
@@ -41,18 +47,11 @@ command :prepare do |c|
       puts "Generating VM '#{id}'"
 
       cmd = "/usr/bin/sudo /usr/bin/lxc-create -t #{options.template} -n v-#{id} -B lvm --fssize #{options.size} --vgname #{options.vgname}"
-
-      puts cmd
-
       TenxEngineer::External.execute(cmd) do |l|
         # TODO log to hostnode stream
-        puts "-> #{l}"
       end
 
       vm = TenxEngineer::Node::VM.new(id, :prepared, nil, options.template, {:fs => {:size => options.size}})
-
-      # FIXME ---- create databag item (for management)
-      # TODO hardcoded node root location
 
       open("#{TenxEngineer::Node::ROOT}/data_bags/vms/#{id}.json", "w") { |f| f << vm.to_json }
 
