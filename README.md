@@ -1,8 +1,10 @@
-# 10xengineer::Node
+# 10xeng-node
 
-TODO: Write a gem description
+10xEngineer hostnode management toolchain
 
 ## Installation
+
+TODO: Change
 
 Add this line to your application's Gemfile:
 
