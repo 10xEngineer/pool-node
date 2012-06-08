@@ -40,6 +40,7 @@ command :prepare do |c|
     count = options.count.to_i
 
     uuid = UUID.new
+
     # TODO re-introduce multiple operations
     #count.times do 
       # prepare individual VMs
@@ -56,7 +57,11 @@ command :prepare do |c|
 
       open("#{TenxEngineer::Node::ROOT}/data_bags/vms/#{id}.json", "w") { |f| f << vm.to_json }
 
-      puts vm.to_json if $json
+      if $json
+        puts vm.to_json
+      else
+        puts "VM #{id} created."
+      end
 
       # options sleep (default to 0 ~ no sleep)
       #sleep options.sleep.to_i
@@ -66,3 +71,5 @@ command :prepare do |c|
 
   end
 end
+
+
