@@ -33,9 +33,9 @@ command :prepare do |c|
        templates << Pathname.new(f).basename.to_s.delete("lxc-")
     end
 
-    abort "Template not recognized (#{options.template})" unless templates.include?(options.template)
+    ext_abort "Template not recognized (#{options.template})" unless templates.include?(options.template)
 
-    abort "Volume group '#{options.vgname}' does not exists!" unless TenxEngineer::Node.volume_group(options.vgname)
+    ext_abort "Volume group '#{options.vgname}' does not exists!" unless TenxEngineer::Node.volume_group(options.vgname)
 
     count = options.count.to_i
 
