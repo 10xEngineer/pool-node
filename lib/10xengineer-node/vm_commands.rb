@@ -30,7 +30,7 @@ command :prepare do |c|
 
     lxc_templates = "/usr/lib/lxc/templates/lxc-*"
     Dir.glob(lxc_templates).each do |f|
-       templates << Pathname.new(f).basename.to_s.delete("lxc-")
+      templates << Pathname.new(f).basename.to_s.delete("lxc-")
     end
 
     ext_abort "Template not recognized (#{options.template})" unless templates.include?(options.template)
@@ -43,33 +43,32 @@ command :prepare do |c|
 
     # TODO re-introduce multiple operations
     #count.times do 
-      # prepare individual VMs
-      id = uuid.generate
+    # prepare individual VMs
+    id = uuid.generate
 
-      puts "Generating VM '#{id}'" unless $json
+    puts "Generating VM '#{id}'" unless $json
 
-      cmd = "/usr/bin/sudo /usr/bin/lxc-create -f /etc/lxc/lxc.conf -t #{options.template} -n v-#{id} -B lvm --fssize #{options.size} --vgname #{options.vgname}"
+    cmd = "/usr/bin/sudo /usr/bin/lxc-create -f /etc/lxc/lxc.conf -t #{options.template} -n v-#{id} -B lvm --fssize #{options.size} --vgname #{options.vgname}"
 
-      begin
+    begin
       TenxEngineer::External.execute(cmd) do |l|
         # TODO log to hostnode stream
       end
 
       vm = TenxEngineer::Node::VM.new(id, :prepared, nil, options.template, {:fs => {:size => options.size}})
-
-      open("#{TenxEngineer::Node::ROOT}/data_bags/vms/#{id}.json", "w") { |f| f << vm.to_json }
+      vm.save!
 
       if $json
         puts vm.to_json
       else
         puts "VM #{id} created."
       end
-      rescue TenxEngineer::External::CommandFailure => e
-        ext_abort e.message
-      end
+    rescue TenxEngineer::External::CommandFailure => e
+      ext_abort e.message
+    end
 
-      # options sleep (default to 0 ~ no sleep)
-      #sleep options.sleep.to_i
+    # options sleep (default to 0 ~ no sleep)
+    #sleep options.sleep.to_i
     #end
   end
 end
@@ -90,22 +89,21 @@ command :allocate do |c|
     vm_desc = File.new("#{TenxEngineer::Node::ROOT}/data_bags/vms/#{id}.json", "r")
     vm = TenxEngineer::Node::VM.from_json(vm_desc)
 
-    # TODO x2 - validate vm format
+    # TODO shared function to validate VM
 
     ext_abort "Specified VM not '#{id}' not available (#{vm.state})." unless vm.state == :prepared
 
-    
-    
+    # change local status (if abandoned, it's node responsibibility to clean it up)
+    vm.state = :allocated
+    vm.save!
 
-
-    # TODO validate container
-    # TODO check data bag item
-    # TODO shared function to validate VM
-    
-    # TODO change the VM status (local only; if abandoned, it's
-    # responsibility of node to get rid of it)
     # TODO run profile provisioning
-    # TODO report back
+
+    if $json
+      puts vm.to_json
+    else
+      puts "VM #{id} allocated."
+    end
   end
 end
 

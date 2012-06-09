@@ -20,6 +20,12 @@ module TenxEngineer
         @updated_at = Time.now
       end
 
+      def save!
+        vm_file = "#{TenxEngineer::Node::ROOT}/data_bags/vms/#{id}.json"
+
+        open(vm_file, "w") { |f| f << vm.to_json }
+      end
+
       def self.from_json(json)
         h = Yajl::Parser.parse(json)
 
