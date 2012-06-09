@@ -71,10 +71,41 @@ command :prepare do |c|
       # options sleep (default to 0 ~ no sleep)
       #sleep options.sleep.to_i
     #end
-
-    
-
   end
 end
 
+command :allocate do |c|
+  c.description = "Allocate prepared VM"
+
+  # TODO how to prepare VM? (--prepare?); need to pass aditional options
+  c.option '--id ID', String, 'Prepared VM id'
+  c.option '--profile PROFILE', String, 'Profile to use'
+
+  c.action do |args, options|
+    options.profile = nil
+
+    # validate container
+    # TODO refactor
+    # TODO x1 - check file
+    vm_desc = File.new("#{TenxEngineer::Node::ROOT}/data_bags/vms/#{id}.json", "r")
+    vm = TenxEngineer::Node::VM.from_json(vm_desc)
+
+    # TODO x2 - validate vm format
+
+    ext_abort "Specified VM not '#{id}' not available (#{vm.state})." unless vm.state == :prepared
+
+    
+    
+
+
+    # TODO validate container
+    # TODO check data bag item
+    # TODO shared function to validate VM
+    
+    # TODO change the VM status (local only; if abandoned, it's
+    # responsibility of node to get rid of it)
+    # TODO run profile provisioning
+    # TODO report back
+  end
+end
 
