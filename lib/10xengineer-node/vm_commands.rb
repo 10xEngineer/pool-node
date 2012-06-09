@@ -48,7 +48,9 @@ command :prepare do |c|
 
       puts "Generating VM '#{id}'" unless $json
 
-      cmd = "/usr/bin/sudo /usr/bin/lxc-create -t #{options.template} -n v-#{id} -B lvm --fssize #{options.size} --vgname #{options.vgname}"
+      cmd = "/usr/bin/sudo /usr/bin/lxc-create -f /etc/lxc/lxc.conf -t #{options.template} -n v-#{id} -B lvm --fssize #{options.size} --vgname #{options.vgname}"
+
+      begin
       TenxEngineer::External.execute(cmd) do |l|
         # TODO log to hostnode stream
       end
@@ -61,6 +63,9 @@ command :prepare do |c|
         puts vm.to_json
       else
         puts "VM #{id} created."
+      end
+      rescue TenxEngineer::External::CommandFailure => e
+        ext_abort e.message
       end
 
       # options sleep (default to 0 ~ no sleep)
