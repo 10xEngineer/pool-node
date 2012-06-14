@@ -67,6 +67,16 @@ module TenxEngineer
 
         Yajl::Encoder.encode(hash)
       end
+
+      def to_s
+        out = []
+        out << "ID: #{@id}"
+        out << "State: #{@state}"
+        out << "Type: #{@type}"
+        out << "IP: #{@ip_addr}"
+
+        out.join("\n")
+      end
     end
   end
 end

@@ -184,6 +184,12 @@ command :info do |c|
     abort "missing VM ID (use --id option)" unless options.id
 
     vm = TenxEngineer::Node::VM.load(options.id)
+
+    if $json
+      puts vm.to_json
+    else
+      puts vm
+    end
   end
 end
 
