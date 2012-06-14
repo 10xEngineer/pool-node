@@ -1,5 +1,6 @@
 require '10xengineer-node/external'
 require '10xengineer-node/vm'
+require '10xengineer-node/dnsmasq'
 require 'pathname'
 require 'logger'
 require 'net/ssh'
@@ -48,7 +49,7 @@ command :prepare do |c|
 
     puts "Generating VM '#{id}'" unless $json
 
-    cmd = "/usr/bin/sudo /usr/bin/lxc-create -f /etc/lxc/lxc.conf -t #{options.template} -n v-#{id} -B lvm --fssize #{options.size} --vgname #{options.vgname}"
+    cmd = "/usr/bin/sudo /usr/bin/lxc-create -f /etc/lxc/lxc.conf -t #{options.template} -n #{id} -B lvm --fssize #{options.size} --vgname #{options.vgname}"
 
     begin
       TenxEngineer::External.execute(cmd) do |l|
@@ -98,12 +99,65 @@ command :allocate do |c|
     vm.save!
 
     # TODO run profile provisioning
+    # lxc-execute 
 
     if $json
       puts vm.to_json
     else
       puts "VM #{id} allocated."
     end
+  end
+end
+
+command :start do |c|
+
+  c.option '--id ID', String, 'VM ID'
+  c.action do |args, options|
+    # TODO start vm
+    # TODO validate state
+    # TODO get IP address
+    # TODO write information
+    abort "No VM ID" unless options.id
+
+    cmd = "/usr/bin/sudo /usr/bin/lxc-start -n #{options.id} -d"
+
+    begin
+      TenxEngineer::External.execute(cmd) do |l|
+        # TODO log to hostnode stream
+      end
+
+
+
+      vm = TenxEngineer::Node.load(id)
+
+
+
+
+      vm.save!
+
+      if $json
+        puts vm.to_json
+      else
+        puts "VM #{id} created."
+      end
+    rescue TenxEngineer::External::CommandFailure => e
+      ext_abort e.message
+    end
+
+
+
+
+  end
+end
+
+command :info do |c|
+  # TODO print LXC information
+
+  c.option '--id ID', String, 'VM ID'
+  c.action do |args, options|
+    abort "missing VM ID (use --id option)" unless options.id
+
+    vm = TenxEngineer::Node::VM.load(options.id)
   end
 end
 
