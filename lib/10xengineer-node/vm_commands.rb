@@ -110,14 +110,15 @@ command :allocate do |c|
 end
 
 command :start do |c|
-
   c.option '--id ID', String, 'VM ID'
   c.action do |args, options|
-    # TODO start vm
-    # TODO validate state
-    # TODO get IP address
-    # TODO write information
-    abort "No VM ID" unless options.id
+    ext_abort "No VM ID" unless options.id
+
+    begin
+      vm = TenxEngineer::Node::VM.load(options.id)
+    rescue Errno::ENOENT
+      ext_abort "Invalid VM #{options.id}"
+    end
 
     cmd = "/usr/bin/sudo /usr/bin/lxc-start -n #{options.id} -d"
 
@@ -126,27 +127,52 @@ command :start do |c|
         # TODO log to hostnode stream
       end
 
-
-
-      vm = TenxEngineer::Node.load(id)
-
-
-
-
+      # TODO race condition with DHCP notification
+      vm.state = :running
       vm.save!
 
       if $json
         puts vm.to_json
       else
-        puts "VM #{id} created."
+        puts "VM #{options.id} started."
       end
     rescue TenxEngineer::External::CommandFailure => e
       ext_abort e.message
     end
+  end
+end
 
+command :stop do |c|
+  c.option '--id ID', String, 'VM ID'
+  c.action do |args, options|
+    ext_abort "No VM ID" unless options.id
 
+    begin
+      vm = TenxEngineer::Node::VM.load(options.id)
+    rescue Errno::ENOENT
+      ext_abort "Invalid VM #{options.id}"
+    end
 
+    cmd = "/usr/bin/sudo /usr/bin/lxc-shutdown -n #{options.id}"
+    puts cmd
 
+    begin
+      TenxEngineer::External.execute(cmd) do |l|
+        # TODO log to hostnode stream
+      end
+
+      # TODO race condition with DHCP notification
+      vm.state = :allocated
+      vm.save!
+
+      if $json
+        puts vm.to_json
+      else
+        puts "VM #{options.id} stopped."
+      end
+    rescue TenxEngineer::External::CommandFailure => e
+      ext_abort e.message
+    end
   end
 end
 
