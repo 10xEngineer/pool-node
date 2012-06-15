@@ -10,6 +10,9 @@ require 'lvm'
 log = Logger.new(STDOUT)
 log.level = Logger::WARN
 
+# TODO refactor command support with shared logic and yield around different stages
+# TODO prevent race conditions on API/broker side
+
 command :prepare do |c|
   c.description = "Prepare new VM"
 
@@ -127,7 +130,6 @@ command :start do |c|
         # TODO log to hostnode stream
       end
 
-      # TODO race condition with DHCP notification
       vm.state = :running
       vm.save!
 
@@ -161,7 +163,6 @@ command :stop do |c|
         # TODO log to hostnode stream
       end
 
-      # TODO race condition with DHCP notification
       vm.state = :allocated
       vm.save!
 
@@ -169,6 +170,72 @@ command :stop do |c|
         puts vm.to_json
       else
         puts "VM #{options.id} stopped."
+      end
+    rescue TenxEngineer::External::CommandFailure => e
+      ext_abort e.message
+    end
+  end
+end
+
+command :hibernate do |c|
+  c.option '--id ID', String, 'VM ID'
+  c.action do |args, options|
+    ext_abort "No VM ID" unless options.id
+
+    begin
+      vm = TenxEngineer::Node::VM.load(options.id)
+    rescue Errno::ENOENT
+      ext_abort "Invalid VM #{options.id}"
+    end
+
+    cmd = "/usr/bin/sudo /usr/bin/lxc-freeze -n #{options.id}"
+    puts cmd
+
+    begin
+      TenxEngineer::External.execute(cmd) do |l|
+        # TODO log to hostnode stream
+      end
+
+      vm.state = :hibernated
+      vm.save!
+
+      if $json
+        puts vm.to_json
+      else
+        puts "VM #{options.id} hibernated."
+      end
+    rescue TenxEngineer::External::CommandFailure => e
+      ext_abort e.message
+    end
+  end
+end
+
+command :restore do |c|
+  c.option '--id ID', String, 'VM ID'
+  c.action do |args, options|
+    ext_abort "No VM ID" unless options.id
+
+    begin
+      vm = TenxEngineer::Node::VM.load(options.id)
+    rescue Errno::ENOENT
+      ext_abort "Invalid VM #{options.id}"
+    end
+
+    cmd = "/usr/bin/sudo /usr/bin/lxc-unfreeze -n #{options.id}"
+    puts cmd
+
+    begin
+      TenxEngineer::External.execute(cmd) do |l|
+        # TODO log to hostnode stream
+      end
+
+      vm.state = :running
+      vm.save!
+
+      if $json
+        puts vm.to_json
+      else
+        puts "VM #{options.id} hibernated."
       end
     rescue TenxEngineer::External::CommandFailure => e
       ext_abort e.message
