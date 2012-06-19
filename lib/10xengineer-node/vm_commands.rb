@@ -243,6 +243,12 @@ command :restore do |c|
   end
 end
 
+# TODO verify vms
+# build set from a) data bag VMs c) lxc-list
+# compare to find orphans 
+# verify the state of invidual VMs / report to API
+# TODO system wide microcloud API configuration
+
 command :info do |c|
   # TODO print LXC information
 

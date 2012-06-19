@@ -4,15 +4,15 @@ require 'time'
 module TenxEngineer
   module Node
     class VM
-      attr_accessor :id, :state, :pool, :type, :options, 
+      attr_accessor :id, :state, :pool, :type, :descriptor, 
         :created_at, :updated_at, :ip_addr, :mac_addr
 
-      def initialize(id, state, pool, type, options = {}, created_at = Time.now, updated_at = Time.now)
+      def initialize(id, state, pool, type, descriptor = {}, created_at = Time.now, updated_at = Time.now)
         @id = id
         @state = state
         @pool = pool
         @type = type
-        @options = options
+        @descriptor = descriptor
         @ip_addr = nil
         @mac_addr = nil
         @created_at = created_at
@@ -38,7 +38,7 @@ module TenxEngineer
       def self.from_json(json)
         h = Yajl::Parser.parse(json)
 
-        vm = VM.new(h["id"], h["state"].to_sym, h["pool"], h["type"], h["options"], Time.parse(h["created_at"]), Time.parse(h["updated_at"]))
+        vm = VM.new(h["id"], h["state"].to_sym, h["pool"], h["type"], h["descriptor"], Time.parse(h["created_at"]), Time.parse(h["updated_at"]))
 
         # additional attributes
         %w{ip_addr mac_addr}.each do |attr|
@@ -58,7 +58,7 @@ module TenxEngineer
           :state => @state,
           :pool => @pool,
           :type => @type,
-          :options => @options,
+          :descriptor => @descriptor,
           :ip_addr => @ip_addr,
           :mac_addr => @mac_addr,
           :created_at => @created_at.iso8601,
