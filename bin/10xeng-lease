@@ -5,7 +5,7 @@ begin
 rescue LoadError
   txe_path = File.expand_path('../../lib', __FILE__)
 
-  $:.unshift(vmaster_path)
+  $:.unshift(txe_path)
 
   require '10xengineer-node'
 end
@@ -26,6 +26,9 @@ require '10xengineer-node/lease_commands'
 unless File.exists? TenxEngineer::Node::ROOT
   abort "10xEngineer root (#{TenxEngineer::Node::ROOT}) does not exists!"
 end
+
+# microcloud client
+$microcloud = Microcloud.new
 
 Commander::Runner.instance.run!
 

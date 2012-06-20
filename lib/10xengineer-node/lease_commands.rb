@@ -1,4 +1,5 @@
 require '10xengineer-node/vm'
+require '10xengineer-node/microcloud'
 
 # TODO simulate :old 
 
@@ -23,6 +24,8 @@ require '10xengineer-node/vm'
       end
 
       vm.save!
+
+      $microcloud.send("vm_#{cmd_name}", vm)
 
       # TODO log event to the node stream
     end
