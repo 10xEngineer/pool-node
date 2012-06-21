@@ -32,7 +32,7 @@ class Microcloud
       }
     })
 
-    self.class.post("/updates/vms/#{vm.id}", :body => body)
+    self.class.post("/vms/#{vm.id}/notify", :body => body)
   end
 
   def vm_del(vm)
