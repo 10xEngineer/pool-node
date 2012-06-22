@@ -91,12 +91,12 @@ command :allocate do |c|
     # validate container
     # TODO refactor
     # TODO x1 - check file
-    vm_desc = File.new("#{TenxEngineer::Node::ROOT}/data_bags/vms/#{id}.json", "r")
+    vm_desc = File.new("#{TenxEngineer::Node::ROOT}/data_bags/vms/#{options.id}.json", "r")
     vm = TenxEngineer::Node::VM.from_json(vm_desc)
 
     # TODO shared function to validate VM
 
-    ext_abort "Specified VM not '#{id}' not available (#{vm.state})." unless vm.state == :prepared
+    ext_abort "Specified VM not '#{options.id}' not available (currently in state #{vm.state})." unless vm.state == :prepared
 
     # change local status (if abandoned, it's node responsibibility to clean it up)
     vm.state = :allocated
@@ -108,7 +108,7 @@ command :allocate do |c|
     if $json
       puts vm.to_json
     else
-      puts "VM #{id} allocated."
+      puts "VM #{options.id} allocated."
     end
   end
 end
