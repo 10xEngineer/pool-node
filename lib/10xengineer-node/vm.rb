@@ -48,8 +48,12 @@ module TenxEngineer
         vm
       end
 
+      def self.vm_storage
+        File.join(TenxEngineer::Node::ROOT, "data_bags/vms")
+      end
+
       def self.vm_file(id)
-        "#{TenxEngineer::Node::ROOT}/data_bags/vms/#{id}.json"
+        File.join(vm_storage, "#{id}.json")
       end
 
       def to_json

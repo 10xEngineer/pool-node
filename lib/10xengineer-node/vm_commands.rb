@@ -4,6 +4,7 @@ require '10xengineer-node/dnsmasq'
 require 'pathname'
 require 'logger'
 require 'net/ssh'
+require 'yajl'
 require 'uuid'
 require 'lvm'
 
@@ -173,6 +174,39 @@ command :stop do |c|
       end
     rescue TenxEngineer::External::CommandFailure => e
       ext_abort e.message
+    end
+  end
+end
+
+command :list do |c|
+  c.option '--id ID', String, 'VM ID'
+  c.action do |args, options|
+    vms = []
+
+    # find 
+    vm_files = File.join(TenxEngineer::Node::VM.vm_storage, "*.json")
+    Dir.glob(vm_files).each do |f|
+      vm_id = File.basename(f, '.*')
+
+      vm = TenxEngineer::Node::VM.load(vm_id)
+
+      vms << {
+        :id => vm_id,
+        :state => vm.state,
+        :type => vm.type,
+        :ip_addr => vm.ip_addr
+      }
+    end
+
+    if $json
+      puts Yajl::Encoder.encode(vms)
+    else
+      vms.each do |vm|
+        printf "%s\t%s\t%s", vm[:id], vm[:state], vm[:type]
+        printf "\t%s", vm.ip_addr if vm[:ip_addr]
+        puts
+      end
+
     end
   end
 end
