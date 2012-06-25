@@ -25,7 +25,7 @@ command :prepare do |c|
 
   c.action do |args, options|
     options.default :count => 1
-    options.default :size => "512MB"
+    options.default :size => "1024MB"
     options.default :template => "ubuntu"
     options.default :sleep => 0
     options.default :vgname => "lxc"
