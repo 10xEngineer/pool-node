@@ -28,7 +28,13 @@ unless File.exists? TenxEngineer::Node::ROOT
 end
 
 # microcloud client
-$microcloud = Microcloud.new
+config = "/etc/10xeng.yaml"
+abort "Configuration file does not exists!" unless File.exists?(config)
+
+config = YAML::load(File.open(config))
+endpoint = config["hostnode"]["endpoint"]
+
+$microcloud = TenxLabs::Microcloud.new(endpoint)
 
 Commander::Runner.instance.run!
 
