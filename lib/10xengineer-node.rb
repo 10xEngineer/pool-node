@@ -1,5 +1,6 @@
 require "10xengineer-node/version"
 
+require 'syslog'
 require 'commander'
 require 'commander/delegates'
 

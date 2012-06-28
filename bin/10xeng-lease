@@ -27,6 +27,10 @@ unless File.exists? TenxEngineer::Node::ROOT
   abort "10xEngineer root (#{TenxEngineer::Node::ROOT}) does not exists!"
 end
 
+# syslog
+Syslog.open("10xeng-lease", Syslog::LOG_PID,
+            Syslog::LOG_DAEMON | Syslog::LOG_LOCAL3)
+
 # microcloud client
 config = "/etc/10xeng.yaml"
 abort "Configuration file does not exists!" unless File.exists?(config)

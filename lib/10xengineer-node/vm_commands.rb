@@ -52,6 +52,7 @@ command :prepare do |c|
     id = uuid.generate
 
     puts "Generating VM '#{id}'" unless $json
+    Syslog.log(Syslog::LOG_INFO, "generating vm=#{id}")
 
     cmd = "/usr/bin/sudo /usr/bin/lxc-create -f /etc/lxc/lxc.conf -t #{options.template} -n #{id} -B lvm --fssize #{options.size} --vgname #{options.vgname}"
 
@@ -68,8 +69,12 @@ command :prepare do |c|
       else
         puts "VM #{id} created."
       end
+
+      Syslog.log(Syslog::LOG_INFO, "vm=#{id} created")
     rescue TenxEngineer::External::CommandFailure => e
       ext_abort e.message
+
+      Syslog.log(Syslog::LOG_ERR, "vm=#{id} failed reason='#{e.message}'")
     end
 
     # options sleep (default to 0 ~ no sleep)
@@ -127,6 +132,8 @@ command :start do |c|
     cmd = "/usr/bin/sudo /usr/bin/lxc-start -n #{options.id} -d"
 
     begin
+      Syslog.log(Syslog::LOG_INFO, "vm=#{id} starting")
+
       TenxEngineer::External.execute(cmd) do |l|
         # TODO log to hostnode stream
       end
@@ -139,7 +146,10 @@ command :start do |c|
       else
         puts "VM #{options.id} started."
       end
+
+      Syslog.log(Syslog::LOG_INFO, "vm=#{id} started")
     rescue TenxEngineer::External::CommandFailure => e
+      Syslog.log(Syslog::LOG_ERR, "vm=#{id} startup failed. reason=#{e.message}")
       ext_abort e.message
     end
   end
@@ -160,6 +170,7 @@ command :stop do |c|
     puts cmd
 
     begin
+      Syslog.log(Syslog::LOG_INFO, "vm=#{id} stop request")
       TenxEngineer::External.execute(cmd) do |l|
         # TODO log to hostnode stream
       end
@@ -172,7 +183,10 @@ command :stop do |c|
       else
         puts "VM #{options.id} stopped."
       end
+
+      Syslog.log(Syslog::LOG_INFO, "vm=#{id} stopped")
     rescue TenxEngineer::External::CommandFailure => e
+      Syslog.log(Syslog::LOG_ERR, "vm=#{id} stop failed. reason=#{e.message}")
       ext_abort e.message
     end
   end
