@@ -31,7 +31,7 @@ require '10xengineer-node/vm'
 
       Syslog.log(Syslog::LOG_INFO, "action=#{cmd_name} mac_addr#{mac_addr} ip_addr=#{ip_addr} vm=#{vm_id}")
 
-      $microcloud.notify(:vm, vm.id, actions[cmd_name], vm.descriptor)
+      $microcloud.notify(:vm, vm.uuid, actions[cmd_name], vm.descriptor)
 
       # TODO log event to the node stream
     end
