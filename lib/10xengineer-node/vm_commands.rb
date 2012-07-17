@@ -22,12 +22,14 @@ command :prepare do |c|
   c.option '--count COUNT', String, 'Number of VMs to create (default 1)'
   c.option '--sleep TIME', String, 'Sleep-time when creating multiple VMs (default to 0)'
   c.option '--vgname NAME', String, 'LVM Volume Group to use (lxc by default)'
+  c.option '--pool NAME', String, '10xLab Pool name to use'
 
   c.action do |args, options|
     options.default :count => 1
     options.default :size => "1024MB"
     options.default :template => "ubuntu"
     options.default :sleep => 0
+    options.default :pool => nil
     options.default :vgname => "lxc"
 
     # get list of templates
@@ -61,7 +63,7 @@ command :prepare do |c|
         # TODO log to hostnode stream
       end
 
-      vm = TenxEngineer::Node::VM.new(id, :prepared, nil, options.template, {:fs => {:size => options.size}})
+      vm = TenxEngineer::Node::VM.new(id, :prepared, options.pool, options.template, {:fs => {:size => options.size}})
       vm.save!
 
       if $json
