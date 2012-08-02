@@ -45,8 +45,11 @@ $microcloud = TenxLabs::Microcloud.new(endpoint)
 begin
   Commander::Runner.instance.run!
 rescue Exception => e
+
   Syslog.log(Syslog::LOG_CRIT, "command run ended with exception message='#{e.message}'")
   e.backtrace.each do |line|
     Syslog.log(Syslog::LOG_CRIT, line)
   end
+
+  Process.exit 1 if e.message == 'exit'
 end

@@ -74,9 +74,9 @@ command :prepare do |c|
 
       Syslog.log(Syslog::LOG_INFO, "vm=#{id} created")
     rescue TenxEngineer::External::CommandFailure => e
-      ext_abort e.message
-
       Syslog.log(Syslog::LOG_ERR, "vm=#{id} failed reason='#{e.message}'")
+
+      ext_abort e.message
     end
 
     # options sleep (default to 0 ~ no sleep)
