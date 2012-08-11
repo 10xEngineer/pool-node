@@ -73,7 +73,7 @@ module TenxEngineer
       end
 
       def to_json
-        Yajl::Encoder.encode(this.to_hash)
+        Yajl::Encoder.encode(self.to_hash)
       end
 
       def to_s
