@@ -29,9 +29,9 @@ require '10xengineer-node/vm'
         :del => :stop
       }
 
-      Syslog.log(Syslog::LOG_INFO, "action=#{cmd_name} mac_addr#{mac_addr} ip_addr=#{ip_addr} vm=#{vm_id}")
+      Syslog.log(Syslog::LOG_INFO, "action=#{cmd_name} mac_addr=#{mac_addr} ip_addr=#{ip_addr} vm=#{vm_id}")
 
-      $microcloud.submit_event(:vm, vm.uuid, actions[cmd_name], vm.descriptor)
+      $microcloud.submit_event(:vm, vm.uuid, actions[cmd_name], vm.to_hash)
 
       # TODO log event to the node stream
     end

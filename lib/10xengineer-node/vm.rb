@@ -56,7 +56,7 @@ module TenxEngineer
         File.join(vm_storage, "#{uuid}.json")
       end
 
-      def to_json
+      def to_hash
         hash = {
           :uuid => @uuid,
           :state => @state,
@@ -69,7 +69,11 @@ module TenxEngineer
           :updated_at => @updated_at.iso8601
         }
 
-        Yajl::Encoder.encode(hash)
+        hash
+      end
+
+      def to_json
+        Yajl::Encoder.encode(this.to_hash)
       end
 
       def to_s
