@@ -14,11 +14,11 @@ require '10xengineer-node/vm'
       vm = TenxEngineer::Node::VM.load(vm_id)
 
       if cmd_name == :add
-        vm.ip_addr = ip_addr
-        vm.mac_addr = mac_addr
+        vm.descriptor[:ip_addr] = ip_addr
+        vm.descriptor[:mac_addr] = mac_addr
       else
-        vm.ip_addr = nil
-        vm.mac_addr = nil
+        vm.descriptor[:ip_addr] = nil
+        vm.descriptor[:mac_addr] = nil
       end
 
       vm.save!
