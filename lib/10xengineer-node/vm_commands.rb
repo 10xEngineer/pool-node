@@ -169,7 +169,6 @@ command :stop do |c|
     end
 
     cmd = "/usr/bin/sudo /usr/bin/lxc-shutdown -n #{options.id}"
-    puts cmd
 
     begin
       Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} stop request")
@@ -239,7 +238,6 @@ command :destroy do |c|
     end
 
     cmd = "/usr/bin/sudo /usr/bin/lxc-destroy -n #{options.id}"
-    puts cmd
 
     begin
       Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} destroy request")

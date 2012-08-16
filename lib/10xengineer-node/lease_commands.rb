@@ -12,7 +12,6 @@ require '10xengineer-node/vm'
       vm_id = args.shift
 
       vm = TenxEngineer::Node::VM.load(vm_id)
-      puts vm.inspect
 
       if cmd_name == :add
         vm.ip_addr = ip_addr
