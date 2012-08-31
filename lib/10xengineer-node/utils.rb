@@ -1,5 +1,4 @@
 require 'yajl'
-require 'yaml'
 
 def ext_abort(reason, json = $json)
   puts (json ? Yajl::Encoder.encode({:reason => reason}) : reason)
@@ -7,10 +6,10 @@ def ext_abort(reason, json = $json)
   Process.exit 1
 end
 
-def config_endpoint(config = "/etc/10xeng.yaml")
+def config_endpoint(config = "/etc/10xlabs-hostnode.json")
   return nil unless File.exists?(config)
 
-  config = YAML::load(File.open(config))
+  config = Yajl::Parser.parse(File.open(config))
 
-  return config["hostnode"]["endpoint"] || nil
+  return config["endpoint"] || nil
 end
