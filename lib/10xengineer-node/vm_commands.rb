@@ -1,6 +1,7 @@
 require '10xengineer-node/external'
 require '10xengineer-node/vm'
 require '10xengineer-node/dnsmasq'
+require 'mixlib/shellout'
 require 'pathname'
 require 'logger'
 require 'net/ssh'
@@ -10,6 +11,63 @@ require 'lvm'
 
 log = Logger.new(STDOUT)
 log.level = Logger::WARN
+
+command :create do |c|
+  c.description = "Create new VM"
+
+  c.option '--template TEMPLATE', String, 'Source template'
+  c.option '--rev VERSION', String, 'Source template version'
+  c.option '--size SIZE', String, 'VM size'
+  c.option '--hostname HOSTNAME', String, 'VM hostname'
+
+  c.action do |args, options|
+    options.default :template => "ubuntu-precise-amd64"
+    options.default :rev => "default"
+    options.default :size => "256"
+    options.default :hostname => "sizzling-cod"
+
+    uuid = UUID.new
+    id = uuid.generate
+    puts "Creating vm='#{id}'" unless $json
+
+    root_dir = "/var/lib"
+    source_ds = "lxc/_templates/_default"
+    template_dir = File.join(root_dir, source_ds, options.template)
+
+    vm_ds = "lxc"
+
+    # TODO should use zfs list -t snapshot
+    ext_abort "Template not recognized (#{options.template})" unless File.exists?(template_dir)
+
+    begin
+
+      # create new dataset
+      TenxEngineer::External.execute("zfs clone -p #{source_ds}/#{options.template}@#{options.rev} #{vm_ds}/#{id}")
+
+      # 5 GB per each 256MB slice of memory
+      quota = (options.size.to_i / 256) * 5
+      TenxEngineer::External.execute("zfs set quota=#{quota}G #{vm_ds}/#{id}")
+
+      # create initial snapshot
+      TenxEngineer::External.execute("zfs snapshot #{vm_ds}/#{id}@initial")
+
+      # TODO configure - how to make it extensible??
+      # basic (/etc/network/interfaces, /etc/hostname, /etc/hosts, /etc/resolv.conf, add user)
+
+      # TODO start it
+
+      # TODO how to do cleanup - like lxb-ubuntu cleanup on failure
+
+
+      # TODO cleanup
+    rescue TenxEngineer::External::CommandFailure => e
+        puts 'xxxx'
+        puts e.inspect
+
+        ext_abort e.message
+    end
+  end
+end
 
 # TODO refactor command support with shared logic and yield around different stages
 # TODO prevent race conditions on API/broker side

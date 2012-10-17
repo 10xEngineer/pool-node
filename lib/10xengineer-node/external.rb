@@ -1,39 +1,27 @@
-require 'open4'
+require 'mixlib/shellout'
 
 module TenxEngineer
-  # from di-ruby-lvm / external
   module External
 
     class CommandFailure < RuntimeError; end
 
     def execute(cmd)
-      output = []
-      error = nil
+      shell_out = Mixlib::ShellOut.new(cmd)      
+      shell_out.run_command
 
-      stat = Open4.popen4(cmd) do |pid, stdin, stdout, stderr|
-        while line = stdout.gets
-          output << line
-        end
-
-        error = stderr.read.strip
-      end
-
-      if stat.exited?
-        if stat.exitstatus > 0
-          error_message = error.empty? ? (output.delete_if {|i| i.strip.empty?}).first : error 
-
-          raise CommandFailure, "Error (#{stat.exitstatus}): #{error_message}"
-        end
-      elsif stat.signaled?
-        raise CommandFailure, "Error - signal (#{stat.termsig}) and terminated."
-      elsif stat.stopped?
-        raise CommandFailure, "Error - signal (#{stat.termsig}) and is stopped."
+      if shell_out.status.signaled?
+        raise CommandFailure, "Error - signal (#{shell_out.status.termsig}) and terminated"
+      elsif shell_out.status.stopped?
+        raise CommandFailure, "Error - signal (#{shell_out.status.stopsig}) and is stopped"
+      elsif !shell_out.status.success?
+        error_message = shell_out.stderr.empty ? (shell_out.stdout.delete_if {|i| i.strip.empty?}).first : shell_out.stderr.split("\n").first
+        raise CommandFailure, "Error (#{shell_out.status.exitstatus}"
       end
 
       if block_given?
-        return output.each { |l| yield l}
+        return shell_out.stdout.split("\n").each { |l| yield l}
       else
-        return output.join
+        return shell_out.stdout
       end
     end
 
