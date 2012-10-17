@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+
+begin
+  require '10xengineer-node'
+rescue LoadError
+  txe_path = File.expand_path('../../lib', __FILE__)
+
+  $:.unshift(txe_path)
+
+  require '10xengineer-node'
+end
+
+program :name, "node-templates"
+program :version, TenxEngineer::Node::VERSION
+program :description, "10xEngineer Labs node management toolchain"
+program :help_formatter, :compact
+
+$json = false
+global_option("-j", "--json", "JSON output (for noninteractive mode)") { $json = true }
+
+# syslog
+Syslog.open("lab-templates", Syslog::LOG_PID,
+            Syslog::LOG_DAEMON)
+
+
+default_command :help
+
+# load commands
+require '10xengineer-node/template_commands'
+
+begin
+  Commander::Runner.instance.run!
+rescue Exception => e
+
+  Syslog.log(Syslog::LOG_CRIT, "command run ended with exception message='#{e.message}'")
+  e.backtrace.each do |line|
+    Syslog.log(Syslog::LOG_CRIT, line)
+  end
+
+  Process.exit 1 if e.message == 'exit'
+end

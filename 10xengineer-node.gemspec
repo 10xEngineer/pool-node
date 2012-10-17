@@ -5,7 +5,7 @@ Gem::Specification.new do |gem|
   gem.authors       = ["Radim Marek"]
   gem.email         = ["radim@laststation.net"]
 
-  gem.description   = %q{10xEngineer.me hostnode management toolchain}
+  gem.description   = %q{Internal 10xEngineer Labs hostnode tool chain}
   gem.summary       = %q{}
   gem.homepage      = "http://10xengineer.me/"
 
@@ -23,7 +23,9 @@ Gem::Specification.new do |gem|
   gem.add_dependency "di-ruby-lvm", "~> 0.1.3"
   gem.add_dependency "yajl-ruby", "~> 1.1.0"
   gem.add_dependency "httparty", "~> 0.8.3"
+  gem.add_dependency "zfs", "~> 0.1.1"
   gem.add_dependency "microcloud", "~> 0.1.1"
+  gem.add_dependency "mixlib-shellout", "~> 1.1.0"
 
   gem.add_development_dependency "rspec", "~> 2"
   gem.add_development_dependency "simplecov"
