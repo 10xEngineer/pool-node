@@ -1,7 +1,9 @@
 require '10xengineer-node/external'
 require '10xengineer-node/vm'
 require '10xengineer-node/dnsmasq'
+require '10xengineer-node/handlers'
 require 'mixlib/shellout'
+require 'securerandom'
 require 'pathname'
 require 'logger'
 require 'net/ssh'
@@ -15,16 +17,27 @@ log.level = Logger::WARN
 command :create do |c|
   c.description = "Create new VM"
 
+  # usage:
+  # 
+  # create --template ubuntu-precise64 --config base,ubuntu_uid --data hostname=demo1.local
+
   c.option '--template TEMPLATE', String, 'Source template'
   c.option '--rev VERSION', String, 'Source template version'
   c.option '--size SIZE', String, 'VM size'
   c.option '--hostname HOSTNAME', String, 'VM hostname'
+  c.option '--handlers HANDLERS', String, "VM configuration handlers to use"
+  c.option '--data DATA', String, "Custom VM data (k/v pairs)"
+
+  # TODO template to specify default handlers 
+  # TODO global handlers, per-template handlers - ie basic is shared
 
   c.action do |args, options|
-    options.default :template => "ubuntu-precise-amd64"
-    options.default :rev => "default"
+    options.default :template => "ubuntu-precise64"
+    options.default :rev => "x1"
     options.default :size => "256"
     options.default :hostname => "sizzling-cod"
+    options.default :handlers => "base,u_ubuntu,lab_setup"
+    options.default :data => ""
 
     uuid = UUID.new
     id = uuid.generate
@@ -36,34 +49,46 @@ command :create do |c|
 
     vm_ds = "lxc"
 
+    # FIXME validate handlers first
+
     # TODO should use zfs list -t snapshot
     ext_abort "Template not recognized (#{options.template})" unless File.exists?(template_dir)
 
     begin
-
       # create new dataset
       TenxEngineer::External.execute("zfs clone -p #{source_ds}/#{options.template}@#{options.rev} #{vm_ds}/#{id}")
 
       # 5 GB per each 256MB slice of memory
+      # TODO configurable with fallback to 5 GB
       quota = (options.size.to_i / 256) * 5
-      TenxEngineer::External.execute("zfs set quota=#{quota}G #{vm_ds}/#{id}")
 
-      # create initial snapshot
+      TenxEngineer::External.execute("zfs set quota=#{quota}G #{vm_ds}/#{id}")
       TenxEngineer::External.execute("zfs snapshot #{vm_ds}/#{id}@initial")
 
-      # TODO configure - how to make it extensible??
       # basic (/etc/network/interfaces, /etc/hostname, /etc/hosts, /etc/resolv.conf, add user)
+      vm_dir = File.join(root_dir, vm_ds, id)
+      config = ConfigFactory.new(vm_dir)
 
-      # TODO start it
+      # configuration handlers
+      _data = Hash[*options.data.split(/[,=]/)]
+      data = _data.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
+
+      # setup configuration defaults
+      data[:hostname] = options.hostname
+
+      rand = SecureRandom.hex.scan(/.{2}/m)[0..2].join(':')
+      data[:hwaddr] = "00:16:3e:#{rand}"
+
+      # TODO load handlers from template & merge with options.handlers
+      # TODO precedence?
+      options.handlers.split(',').each do |handler|
+        config.run(handler, data)
+      end
+
+      TenxEngineer::External.execute("/usr/bin/lxc-start -n #{id} -d")
 
       # TODO how to do cleanup - like lxb-ubuntu cleanup on failure
-
-
-      # TODO cleanup
     rescue TenxEngineer::External::CommandFailure => e
-        puts 'xxxx'
-        puts e.inspect
-
         ext_abort e.message
     end
   end

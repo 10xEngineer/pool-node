@@ -14,8 +14,8 @@ module TenxEngineer
       elsif shell_out.status.stopped?
         raise CommandFailure, "Error - signal (#{shell_out.status.stopsig}) and is stopped"
       elsif !shell_out.status.success?
-        error_message = shell_out.stderr.empty ? (shell_out.stdout.delete_if {|i| i.strip.empty?}).first : shell_out.stderr.split("\n").first
-        raise CommandFailure, "Error (#{shell_out.status.exitstatus}"
+        error_message = shell_out.stderr.empty? ? (shell_out.stdout.delete_if {|i| i.strip.empty?}).first : shell_out.stderr.split("\n").first
+        raise CommandFailure, "Error (#{shell_out.status.exitstatus}) - #{shell_out.stderr.split("\n").first}"
       end
 
       if block_given?

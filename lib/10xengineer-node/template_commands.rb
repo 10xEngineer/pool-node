@@ -6,6 +6,10 @@ require 'zfs'
 log = Logger.new(STDOUT)
 log.level = Logger::WARN
 
+command :create do |c|
+  # FIXME implement
+end
+
 command :list do |c|
   c.description = "List available VM templates"
 
@@ -20,19 +24,34 @@ command :list do |c|
   		zfs_list.error!
 
   		datasets = zfs_list.stdout.split("\n")
-  		datasets.each do |ds_list|
-  			rec = ds_list.split(' ')
+  		datasets.each do |ds_item|
+  			rec = ds_item.split(' ')
   			components = rec[0].split('/')
 
   			# /lxc/_templates/owner/template-name
   			next unless components.length == 4
+
+        # read metadata
+        root_f = "/var/lib"
+        metadata_f = File.join(root_f, rec[0], '/metadata.json')
+
+        puts metadata_f
+        unless File.exists?(metadata_f)
+          Syslog.log(Syslog::LOG_ERR, "invalid template=#{rec[0]} reason='missing metadata.json'")
+
+          next
+        end
+        metadata = Yajl::Parser.parse(File.open(metadata_f))
 
   			# hardcoded owner _default
   			next unless components[2] == '_default'
 
   			templates << {
   				:name => components[3],
-  				:mountpoint => rec[1]
+  				:mountpoint => rec[1],
+          :description => metadata["description"],
+          :handlers => metadata["handlers"],
+          :maintainer => metadata["maintainer"]
   			}
   		end
 	rescue Mixlib::ShellOut::ShellCommandFailed => e
@@ -45,7 +64,7 @@ command :list do |c|
 		puts Yajl::Encoder.encode(templates)
 	else
 	  	templates.each do |template|
-	  		puts template[:name]
+	  		puts "#{template[:name]} #{template[:description]}"
 	  	end
 	end
   end

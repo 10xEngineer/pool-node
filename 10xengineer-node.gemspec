@@ -3,7 +3,7 @@ require File.expand_path('../lib/10xengineer-node/version', __FILE__)
 
 Gem::Specification.new do |gem|
   gem.authors       = ["Radim Marek"]
-  gem.email         = ["radim@laststation.net"]
+  gem.email         = ["radim@10xengineer.me"]
 
   gem.description   = %q{Internal 10xEngineer Labs hostnode tool chain}
   gem.summary       = %q{}
@@ -26,6 +26,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency "zfs", "~> 0.1.1"
   gem.add_dependency "microcloud", "~> 0.1.1"
   gem.add_dependency "mixlib-shellout", "~> 1.1.0"
+  gem.add_dependency "erubis", "~> 2.7.0"
 
   gem.add_development_dependency "rspec", "~> 2"
   gem.add_development_dependency "simplecov"
