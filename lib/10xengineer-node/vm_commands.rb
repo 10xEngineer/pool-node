@@ -108,6 +108,30 @@ command :create do |c|
   end
 end
 
+command :snapshot do |c|
+  c.description = "Create new VM snapshot"
+
+  c.option '--id ID', String, 'VM ID'
+  c.option '--name NAME', String, 'Snapshot name'
+  c.action do |args, options|
+    ext_abort "No VM ID" unless options.id
+
+    options.default :name => DateTime.now.strftime('%Y-%m-%d_%H-%M')
+
+    vm_ds = "lxc"
+
+    t_start = Time.now
+    begin
+      TenxEngineer::External.execute("zfs snapshot #{vm_ds}/#{options.id}@#{options.name}")
+
+      t_total = Time.now - t_start
+      Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} snapshot=#{options.name} t_total=#{t_total}")
+    rescue TenxEngineer::External::CommandFailure => e
+        ext_abort e.message
+    end
+  end
+end
+
 command :destroy do |c|
   c.option '--id ID', String, 'VM ID'
   c.action do |args, options|
