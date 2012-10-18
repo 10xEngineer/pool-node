@@ -54,6 +54,8 @@ command :create do |c|
     # TODO should use zfs list -t snapshot
     ext_abort "Template not recognized (#{options.template})" unless File.exists?(template_dir)
 
+    t_start = Time.now
+
     begin
       # create new dataset
       TenxEngineer::External.execute("zfs clone -p #{source_ds}/#{options.template}@#{options.rev} #{vm_ds}/#{id}")
@@ -64,6 +66,8 @@ command :create do |c|
 
       TenxEngineer::External.execute("zfs set quota=#{quota}G #{vm_ds}/#{id}")
       TenxEngineer::External.execute("zfs snapshot #{vm_ds}/#{id}@initial")
+
+      t_zfs = t_start - Time.now
 
       # basic (/etc/network/interfaces, /etc/hostname, /etc/hosts, /etc/resolv.conf, add user)
       vm_dir = File.join(root_dir, vm_ds, id)
@@ -85,9 +89,15 @@ command :create do |c|
         config.run(handler, data)
       end
 
+      t_config = t_start - Time.now
+
       TenxEngineer::External.execute("/usr/bin/lxc-start -n #{id} -d")
 
+      t_lxc = t_start = Time.now
+
       # TODO how to do cleanup - like lxb-ubuntu cleanup on failure
+
+      Syslog.log(Syslog::LOG_INFO, "vm=#{id} started t_zfs=#{t_zfs} t_config=#{t_config} t_lxc=#{t_lxc}")
     rescue TenxEngineer::External::CommandFailure => e
         ext_abort e.message
     end
