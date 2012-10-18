@@ -27,13 +27,14 @@ command :create do |c|
   c.option '--hostname HOSTNAME', String, 'VM hostname'
   c.option '--handlers HANDLERS', String, "VM configuration handlers to use"
   c.option '--data DATA', String, "Custom VM data (k/v pairs)"
+  c.option '--defer', "Defer VM start"
 
   # TODO template to specify default handlers 
   # TODO global handlers, per-template handlers - ie basic is shared
 
   c.action do |args, options|
     options.default :template => "ubuntu-precise64"
-    options.default :rev => "x1"
+    options.default :rev => "default"
     options.default :size => "256"
     options.default :hostname => "sizzling-cod"
     options.default :handlers => "base,u_ubuntu,lab_setup"
@@ -52,13 +53,15 @@ command :create do |c|
     # FIXME validate handlers first
 
     # TODO should use zfs list -t snapshot
-    ext_abort "Template not recognized (#{options.template})" unless File.exists?(template_dir)
+    raise "Template not recognized (#{options.template})" unless File.exists?(template_dir)
 
     t_start = Time.now
 
     begin
       # create new dataset
       TenxEngineer::External.execute("zfs clone -p #{source_ds}/#{options.template}@#{options.rev} #{vm_ds}/#{id}")
+
+      t_clone = Time.now - t_start
 
       # 5 GB per each 256MB slice of memory
       # TODO configurable with fallback to 5 GB
@@ -67,7 +70,7 @@ command :create do |c|
       TenxEngineer::External.execute("zfs set quota=#{quota}G #{vm_ds}/#{id}")
       TenxEngineer::External.execute("zfs snapshot #{vm_ds}/#{id}@initial")
 
-      t_zfs = t_start - Time.now
+      t_zfs = Time.now - t_start
 
       # basic (/etc/network/interfaces, /etc/hostname, /etc/hosts, /etc/resolv.conf, add user)
       vm_dir = File.join(root_dir, vm_ds, id)
@@ -89,15 +92,16 @@ command :create do |c|
         config.run(handler, data)
       end
 
-      t_config = t_start - Time.now
+      t_config = Time.now - t_start
 
-      TenxEngineer::External.execute("/usr/bin/lxc-start -n #{id} -d")
+      TenxEngineer::External.execute("/usr/bin/lxc-start -n #{id} -d") unless options.defer
 
-      t_lxc = t_start = Time.now
+      t_total = Time.now - t_start
 
       # TODO how to do cleanup - like lxb-ubuntu cleanup on failure
 
-      Syslog.log(Syslog::LOG_INFO, "vm=#{id} started t_zfs=#{t_zfs} t_config=#{t_config} t_lxc=#{t_lxc}")
+      options.defer ? result = "created" : result = "created"
+      Syslog.log(Syslog::LOG_INFO, "vm=#{id} #{result} t_clone=#{t_clone} t_zfs=#{t_zfs} t_config=#{t_config} t_total=#{t_total}")
     rescue TenxEngineer::External::CommandFailure => e
         ext_abort e.message
     end
