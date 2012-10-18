@@ -108,6 +108,30 @@ command :create do |c|
   end
 end
 
+command :destroy do |c|
+  c.option '--id ID', String, 'VM ID'
+  c.action do |args, options|
+    ext_abort "No VM ID" unless options.id
+
+    begin
+      Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} destroy request")
+
+      TenxEngineer::External.execute("/usr/bin/sudo /usr/bin/lxc-stop -n #{options.id}")
+      TenxEngineer::External.execute("/usr/bin/sudo /usr/bin/lxc-destroy -n #{options.id}")
+
+      vm_ds = "lxc"
+      TenxEngineer::External.execute("zfs destroy -r #{vm_ds}/#{options.id}")
+
+      Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} destroyed")
+    rescue TenxEngineer::External::CommandFailure => e
+      Syslog.log(Syslog::LOG_ERR, "vm=#{options.id} stop failed. reason=#{e.message}")
+      ext_abort e.message
+    end
+  end
+end
+
+# ---- 
+
 command :allocate do |c|
   c.description = "Allocate prepared VM"
 
@@ -249,41 +273,7 @@ command :list do |c|
   end
 end
 
-command :destroy do |c|
-  c.option '--id ID', String, 'VM ID'
-  c.action do |args, options|
-    ext_abort "No VM ID" unless options.id
 
-    begin
-      vm = TenxEngineer::Node::VM.load(options.id)
-    rescue Errno::ENOENT
-      ext_abort "Invalid VM #{options.id}"
-    end
-
-    cmd = "/usr/bin/sudo /usr/bin/lxc-destroy -n #{options.id}"
-
-    begin
-      Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} destroy request")
-      TenxEngineer::External.execute(cmd) do |l|
-        # TODO log to hostnode stream
-      end
-
-      vm.state = :destroyed
-      vm.save!
-
-      if $json
-        puts vm.to_json
-      else
-        puts "VM #{options.id} destroyed."
-      end
-
-      Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} destroyed")
-    rescue TenxEngineer::External::CommandFailure => e
-      Syslog.log(Syslog::LOG_ERR, "vm=#{options.id} stop failed. reason=#{e.message}")
-      ext_abort e.message
-    end
-  end
-end
 
 
 command :hibernate do |c|
