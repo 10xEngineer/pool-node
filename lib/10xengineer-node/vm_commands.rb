@@ -36,13 +36,8 @@ command :create do |c|
     options.default :template => "ubuntu-precise64"
     options.default :rev => "default"
     options.default :size => "512"
-    options.default :hostname => "sizzling-cod"
     options.default :handlers => "base,u_ubuntu,lab_setup"
     options.default :data => ""
-
-    uuid = UUID.new
-    id = uuid.generate
-    puts "Creating vm='#{id}'" unless $json
 
     root_dir = "/var/lib"
     source_ds = "lxc/_templates/_default"
@@ -52,8 +47,15 @@ command :create do |c|
 
     # FIXME validate handlers first
 
+    raise "Machine hostname is required" unless options.hostname
+
     # TODO should use zfs list -t snapshot
     raise "Template not recognized (#{options.template})" unless File.exists?(template_dir)
+
+    # create VM
+    uuid = UUID.new
+    id = uuid.generate
+    puts "Creating vm='#{id}'" unless $json
 
     t_start = Time.now
 
