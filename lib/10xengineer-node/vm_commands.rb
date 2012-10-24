@@ -35,7 +35,7 @@ command :create do |c|
   c.action do |args, options|
     options.default :template => "ubuntu-precise64"
     options.default :rev => "default"
-    options.default :size => "256"
+    options.default :size => "512"
     options.default :hostname => "sizzling-cod"
     options.default :handlers => "base,u_ubuntu,lab_setup"
     options.default :data => ""
@@ -100,8 +100,16 @@ command :create do |c|
 
       # TODO how to do cleanup - like lxb-ubuntu cleanup on failure
 
-      options.defer ? result = "created" : result = "created"
+      options.defer ? result = "created" : result = "started"
       Syslog.log(Syslog::LOG_INFO, "vm=#{id} #{result} t_clone=#{t_clone} t_zfs=#{t_zfs} t_config=#{t_config} t_total=#{t_total}")
+
+      if $json
+        data = {:uuid => id}
+
+        puts Yajl::Encoder.encode(data)
+      else
+        puts "#{id} #{result}"
+      end
     rescue TenxEngineer::External::CommandFailure => e
         ext_abort e.message
     end
@@ -141,7 +149,6 @@ command :destroy do |c|
       Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} destroy request")
 
       TenxEngineer::External.execute("/usr/bin/sudo /usr/bin/lxc-stop -n #{options.id}")
-      TenxEngineer::External.execute("/usr/bin/sudo /usr/bin/lxc-destroy -n #{options.id}")
 
       vm_ds = "lxc"
       TenxEngineer::External.execute("zfs destroy -r #{vm_ds}/#{options.id}")
