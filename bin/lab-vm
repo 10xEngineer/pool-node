@@ -34,13 +34,13 @@ Syslog.open("lab-vm", Syslog::LOG_PID,
 Syslog.log(Syslog::LOG_INFO, "started with argv='#{ARGV.join(' ')}'")
 
 # microcloud client
-config = "/etc/10xlabs-hostnode.json"
-abort "Configuration file does not exists!" unless File.exists?(config)
+#config = "/etc/10xlabs-hostnode.json"
+#abort "Configuration file does not exists!" unless File.exists?(config)
 
-config = Yajl::Parser.parse(File.open(config))
-endpoint = config["endpoint"]
+#config = Yajl::Parser.parse(File.open(config))
+#endpoint = config["endpoint"]
 
-$microcloud = TenxLabs::Microcloud.new(endpoint)
+#$microcloud = TenxLabs::Microcloud.new(endpoint)
 
 begin
   Commander::Runner.instance.run!
