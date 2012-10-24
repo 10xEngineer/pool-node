@@ -104,7 +104,10 @@ command :create do |c|
       Syslog.log(Syslog::LOG_INFO, "vm=#{id} #{result} t_clone=#{t_clone} t_zfs=#{t_zfs} t_config=#{t_config} t_total=#{t_total}")
 
       if $json
-        data = {:uuid => id}
+        data = {
+          :uuid => id,
+          :state => result
+        }
 
         puts Yajl::Encoder.encode(data)
       else
