@@ -36,7 +36,7 @@ command :create do |c|
     options.default :template => "ubuntu-precise64"
     options.default :rev => "default"
     options.default :size => "512"
-    options.default :handlers => "base,u_ubuntu,lab_setup"
+    options.default :handlers => "base,lab_uid,lab_setup"
     options.default :data => ""
 
     root_dir = "/var/lib"
@@ -108,12 +108,13 @@ command :create do |c|
       if $json
         data = {
           :uuid => id,
-          :state => result
+          :state => result,
+          :name => options.hostname
         }
 
         puts Yajl::Encoder.encode(data)
       else
-        puts "#{id} #{result}"
+        puts "Machine '#{options.hostname} with UUID #{id} #{result}"
       end
     rescue TenxEngineer::External::CommandFailure => e
         ext_abort e.message
@@ -159,6 +160,10 @@ command :destroy do |c|
       TenxEngineer::External.execute("zfs destroy -r #{vm_ds}/#{options.id}")
 
       Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} destroyed")
+
+      if $json
+	puts Yajl::Encoder.encode({:uuid => options.id})
+      end
     rescue TenxEngineer::External::CommandFailure => e
       Syslog.log(Syslog::LOG_ERR, "vm=#{options.id} stop failed. reason=#{e.message}")
       ext_abort e.message
