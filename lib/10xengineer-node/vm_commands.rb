@@ -27,6 +27,7 @@ command :create do |c|
   c.option '--hostname HOSTNAME', String, 'VM hostname'
   c.option '--handlers HANDLERS', String, "VM configuration handlers to use"
   c.option '--data DATA', String, "Custom VM data (k/v pairs)"
+  c.option '--keys KEYS', String, "Setup authorized keys for --user specified"
   c.option '--defer', "Defer VM start"
 
   # TODO template to specify default handlers 
@@ -87,6 +88,7 @@ command :create do |c|
 
       rand = SecureRandom.hex.scan(/.{2}/m)[0..2].join(':')
       data[:hwaddr] = "00:16:3e:#{rand}"
+      data[:keys] = options.keys
 
       # TODO load handlers from template & merge with options.handlers
       # TODO precedence?

@@ -1,5 +1,6 @@
 # encoding: utf-8
 require '10xengineer-node/external'
+require '10xengineer-node/utils'
 require 'erubis'
 require 'rbconfig'
 
