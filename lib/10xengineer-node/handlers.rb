@@ -1,7 +1,7 @@
 # encoding: utf-8
+require '10xengineer-node/external'
 require 'erubis'
 require 'rbconfig'
-require 'external'
 
 class ConfigFactory
 	def initialize(vm_dir)
