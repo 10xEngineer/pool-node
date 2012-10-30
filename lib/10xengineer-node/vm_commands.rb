@@ -142,10 +142,18 @@ command :snapshot do |c|
 
     t_start = Time.now
     begin
-      TenxEngineer::External.execute("zfs snapshot #{vm_ds}/#{options.id}@#{options.name}")
+      res = TenxEngineer::External.execute("zfs snapshot #{vm_ds}/#{options.id}@#{options.name}")
 
       t_total = Time.now - t_start
       Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} snapshot=#{options.name} t_total=#{t_total}")
+
+      if $json
+        snapshot = Labs::Snapshots.details(options.id, options.name)
+
+        puts Yajl::Encoder.encode(snapshot)
+      else
+        puts "Snapshot '#{options.name}' created."
+      end
     rescue TenxEngineer::External::CommandFailure => e
         ext_abort e.message
     end
