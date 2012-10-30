@@ -2,6 +2,7 @@ require '10xengineer-node/external'
 require '10xengineer-node/vm'
 require '10xengineer-node/dnsmasq'
 require '10xengineer-node/handlers'
+require '10xengineer-node/zfs/snapshots'
 require 'human_size_to_number'
 require 'mixlib/shellout'
 require 'securerandom'
@@ -109,10 +110,12 @@ command :create do |c|
       Syslog.log(Syslog::LOG_INFO, "vm=#{id} #{result} t_clone=#{t_clone} t_zfs=#{t_zfs} t_config=#{t_config} t_total=#{t_total}")
 
       if $json
+        snapshots = Labs::Snapshots.for_machine(id)
         data = {
           :uuid => id,
           :state => result,
-          :name => options.hostname
+          :name => options.hostname,
+          :snapshots => snapshots
         }
 
         puts Yajl::Encoder.encode(data)
