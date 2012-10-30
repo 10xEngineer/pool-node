@@ -27,6 +27,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency "microcloud", "~> 0.1.1"
   gem.add_dependency "mixlib-shellout", "~> 1.1.0"
   gem.add_dependency "erubis", "~> 2.7.0"
+  gem.add_dependency "human_size_to_number", "~> 1.0.1"
 
   gem.add_development_dependency "rspec", "~> 2"
   gem.add_development_dependency "simplecov"

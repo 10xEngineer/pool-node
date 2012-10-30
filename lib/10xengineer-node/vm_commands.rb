@@ -2,6 +2,7 @@ require '10xengineer-node/external'
 require '10xengineer-node/vm'
 require '10xengineer-node/dnsmasq'
 require '10xengineer-node/handlers'
+require 'human_size_to_number'
 require 'mixlib/shellout'
 require 'securerandom'
 require 'pathname'
@@ -164,12 +165,52 @@ command :destroy do |c|
       Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} destroyed")
 
       if $json
-	puts Yajl::Encoder.encode({:uuid => options.id})
+        puts Yajl::Encoder.encode({:uuid => options.id})
       end
     rescue TenxEngineer::External::CommandFailure => e
       Syslog.log(Syslog::LOG_ERR, "vm=#{options.id} stop failed. reason=#{e.message}")
       ext_abort e.message
     end
+  end
+end
+
+command :list do |c|
+  c.action do |args, options|
+    res = TenxEngineer::External.execute("/usr/bin/sudo /sbin/zfs list -H -t all")
+
+    machines = []
+
+    entries = res.split("\n")
+    entries.each do |entry|
+      zfs_entry = entry.split(" ")
+
+      name_ex = zfs_entry[0].match /^lxc\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/
+      if name_ex
+        machine_id = name_ex.captures.first
+
+        used_size = (zfs_entry[3] << "B").human_size_to_number
+        real_size = (zfs_entry[1] << "B").human_size_to_number
+        total_size = (zfs_entry[2] << "B").human_size_to_number
+
+        machine = {
+          :uuid => machine_id,
+          :used_size => used_size,
+          :real_size => real_size,
+          :total_size => total_size
+        }
+
+        machines << machine
+
+        unless $json
+          puts "#{machine_id}\t#{zfs_entry[3]}\t#{zfs_entry[1]}\t#{zfs_entry[2]}"
+        end
+      end
+    end
+
+    if $json
+        puts Yajl::Encoder.encode(machines)
+    end
+
   end
 end
 
@@ -283,7 +324,7 @@ command :stop do |c|
   end
 end
 
-command :list do |c|
+command :xxxlist do |c|
   c.option '--id ID', String, 'VM ID'
   c.action do |args, options|
     vms = []
