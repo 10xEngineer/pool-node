@@ -21,11 +21,15 @@ module Labs
 		end
 
 		def details(machine_id, name)
-			res = TenxEngineer::External.execute("/usr/bin/sudo /sbin/zfs list -r -t snapshot -H lxc/#{machine_id}@#{name}")
+			begin
+				res = TenxEngineer::External.execute("/usr/bin/sudo /sbin/zfs list -r -t snapshot -H lxc/#{machine_id}@#{name}")
 
-			entry = res.split("\n").first
+				entry = res.split("\n").first
 
-			snapshot_detail(entry)
+				return snapshot_detail(entry)
+			rescue => e
+				return nil
+			end
 		end
 
 		def for_machine(machine_id)

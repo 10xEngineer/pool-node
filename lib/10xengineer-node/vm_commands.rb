@@ -136,9 +136,13 @@ command :snapshot do |c|
   c.action do |args, options|
     ext_abort "No VM ID" unless options.id
 
-    options.default :name => DateTime.now.strftime('%Y-%m-%d_%H-%M')
+    options.default :name => DateTime.now.strftime('%Y-%m-%d_%H-%M-%S_%L')
 
     vm_ds = "lxc"
+
+    snapshot = Labs::Snapshots.details(options.id, options.name)
+    
+    ext_abort "Snapshot '#{options.name}' already exists!" if snapshot
 
     t_start = Time.now
     begin
