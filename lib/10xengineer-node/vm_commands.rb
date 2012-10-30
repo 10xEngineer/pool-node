@@ -164,6 +164,39 @@ command :snapshot do |c|
   end
 end
 
+command :delshot do |c|
+  c.description = "Remove existing VM snapshot"
+
+  c.option '--id ID', String, 'VM ID'
+  c.option '--name NAME', String, 'Snapshot name'
+  c.action do |args, options|
+    ext_abort "No VM ID" unless options.id
+    ext_abort "Snapshot name required" unless options.name
+
+    vm_ds = "lxc"
+
+    snapshot = Labs::Snapshots.details(options.id, options.name)
+    ext_abort "Snapshot '#{options.name}' does not exists!" unless snapshot
+
+    t_start = Time.now
+    begin
+      res = TenxEngineer::External.execute("zfs destroy #{vm_ds}/#{options.id}@#{options.name}")
+
+      t_total = Time.now - t_start
+      Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} snapshot=#{options.name} t_total=#{t_total} destroyed")
+
+      if $json
+        puts Yajl::Encoder.encode({})
+      else
+        puts "Snapshot '#{options.name}' destroyed."
+      end
+    rescue TenxEngineer::External::CommandFailure => e
+        ext_abort e.message
+    end
+  end
+end
+
+
 command :destroy do |c|
   c.option '--id ID', String, 'VM ID'
   c.action do |args, options|
