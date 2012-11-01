@@ -18,6 +18,11 @@ lxc.pivotdir = lxc_putold
 # uncomment the next line to run the container unconfined:
 #lxc.aa_profile = unconfined
 
+# resource limits
+lxc.cgroup.memory.limit_in_bytes = 512M
+lxc.cgroup.memory.memsw.limit_in_bytes = 1G
+
+
 lxc.cgroup.devices.deny = a
 # Allow any mknod (but not using the node)
 lxc.cgroup.devices.allow = c *:* m
