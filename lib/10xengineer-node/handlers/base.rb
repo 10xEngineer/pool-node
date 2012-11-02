@@ -23,20 +23,11 @@ EOH
 File.open(hosts_f, 'w') {|f| f.write(hosts)}
 
 # network interfaces
+config_t = File.join(File.dirname(__FILE__), '../templates/interfaces.erb')
+erb = Erubis::Eruby.new(File.read(config_t))
+
 interfaces_f = File.join(@rootfs, "/etc/network/interfaces")
-interfaces = <<-EOH
-# This file describes the network interfaces available on your system
-# and how to activate them. For more information, see interfaces(5).
-
-# The loopback network interface
-auto lo
-iface lo inet loopback
-
-auto eth0
-iface eth0 inet dhcp
-EOH
-
-File.open(interfaces_f, 'w') {|f| f.write(interfaces)}
+File.open(interfaces_f, 'w') {|f| f.write(erb.result(binding()))}
 
 # fstab
 fstab_f = File.join(@vm_dir, "fstab")

@@ -1,0 +1,17 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+auto eth0
+<% if @data[:ipv4] %>
+iface eth0 inet static
+	address <%= @data[:ipv4] %>
+	netmask 255.240.0.0
+	gateway 172.16.1.1
+<% else %>
+iface eth0 inet dhcp
+<% end %> 
+
