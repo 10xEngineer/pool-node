@@ -5,11 +5,7 @@ require 'syslog'
 require 'commander'
 require 'commander/delegates'
 
-require "10xengineer-node/shared"
-require "10xengineer-node/lvm"
 require "10xengineer-node/utils"
-
-require "10xlabs/microcloud"
 
 #
 # snippet from commander:lib/commander/import.rb needed when manually calling

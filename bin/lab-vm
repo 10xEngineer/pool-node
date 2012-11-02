@@ -23,24 +23,11 @@ default_command :help
 # load commands
 require '10xengineer-node/vm_commands'
 
-unless File.exists? TenxEngineer::Node::ROOT
-  abort "10xEngineer root (#{TenxEngineer::Node::ROOT}) does not exists!"
-end
-
 # syslog
 Syslog.open("lab-vm", Syslog::LOG_PID,
             Syslog::LOG_DAEMON)
 
 Syslog.log(Syslog::LOG_INFO, "started with argv='#{ARGV.join(' ')}'")
-
-# microcloud client
-#config = "/etc/10xlabs-hostnode.json"
-#abort "Configuration file does not exists!" unless File.exists?(config)
-
-#config = Yajl::Parser.parse(File.open(config))
-#endpoint = config["endpoint"]
-
-#$microcloud = TenxLabs::Microcloud.new(endpoint)
 
 begin
   Commander::Runner.instance.run!
