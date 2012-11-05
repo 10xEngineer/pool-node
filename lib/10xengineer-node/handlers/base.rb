@@ -38,3 +38,16 @@ devtmpfs        dev          devtmpfs defaults 0 0
 EOH
 
 File.open(fstab_f, 'w') {|f| f.write(fstab)}
+
+# motd
+motd_help_text_f = File.join(@rootfs, "/etc/update-motd.d/10-help-text")
+motd = <<-EOH
+#!/bin/sh
+[ -r /etc/lsb-release ] && . /etc/lsb-release
+
+echo 
+echo "* Documentation & Support - http://help.10xengineer.me/"
+echo
+EOH
+
+File.open(motd_help_text_f, 'w') {|f| f.write(motd)}
