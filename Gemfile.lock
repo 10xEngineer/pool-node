@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    10xengineer-node (0.1.3)
+    10xengineer-node (1.0.2)
       commander (~> 4.1.2)
       erubis (~> 2.7.0)
       httparty (~> 0.8.3)
