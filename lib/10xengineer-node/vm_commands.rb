@@ -71,7 +71,7 @@ command :create do |c|
       quota = (options.size.to_i / 256) * 5
 
       TenxEngineer::External.execute("zfs set quota=#{quota}G #{vm_ds}/#{id}")
-      TenxEngineer::External.execute("zfs snapshot #{vm_ds}/#{id}@initial")
+      #TenxEngineer::External.execute("zfs snapshot #{vm_ds}/#{id}@initial")
 
       t_zfs = Time.now - t_start
 
