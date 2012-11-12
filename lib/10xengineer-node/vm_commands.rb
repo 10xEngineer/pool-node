@@ -234,7 +234,7 @@ command :ps do |c|
     ext_abort "No Machine ID provided" unless options.id
 
     #ps_cmd = "lxc-ps -n #{options.id} -L -f weo user,pid,ppid,%cpu,%mem,nlwp,vsz,rss,tty,stat,start,time,command"
-    ps_cmd = "lxc-ps -n #{options.id} -L -f weo user,pid,ppid,%cpu,%mem,nlwp,vsz,rss,tty,stat,start,time,command"
+    ps_cmd = "lxc-ps -n #{options.id} -L -f weo uid,user,pid,ppid,%cpu,%mem,nlwp,vsz,rss,tty,stat,start,time,stime,tty,c,command"
 
     begin
       res = TenxEngineer::External.execute("/usr/bin/sudo #{ps_cmd}")
@@ -254,9 +254,9 @@ command :ps do |c|
 
         out_line = {}
         columns.each do |col| 
-          unless col == 'container'
-            out_line[col] = (col == columns.last) ? line_parts.join(' ') : line_parts.shift
-          end
+          val = (col == columns.last) ? line_parts.join(' ') : line_parts.shift
+
+          out_line[col] = val unless col == 'container'
         end
 
         command = out_line["command"]
