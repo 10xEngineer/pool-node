@@ -253,7 +253,11 @@ command :ps do |c|
         line_parts = line.split(" ")
 
         out_line = {}
-        columns.each {|col| out_line[col] = (col == columns.last) ? line_parts.join(' ') : line_parts.shift}
+        columns.each do |col| 
+          unless col == 'container'
+            out_line[col] = (col == columns.last) ? line_parts.join(' ') : line_parts.shift
+          end
+        end
 
         command = out_line["command"]
         env = {}
