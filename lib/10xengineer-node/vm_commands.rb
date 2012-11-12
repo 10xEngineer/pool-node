@@ -226,6 +226,68 @@ command :delshot do |c|
   end
 end
 
+command :ps do |c|
+  c.option '--id ID', String, 'Machine ID'
+  c.action do |args, options|
+    Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} request=ps")
+
+    ext_abort "No Machine ID provided" unless options.id
+
+    #ps_cmd = "lxc-ps -n #{options.id} -L -f weo user,pid,ppid,%cpu,%mem,nlwp,vsz,rss,tty,stat,start,time,command"
+    ps_cmd = "lxc-ps -n #{options.id} -L -f weo user,pid,ppid,%cpu,%mem,nlwp,vsz,rss,tty,stat,start,time,command"
+
+    begin
+      res = TenxEngineer::External.execute("/usr/bin/sudo #{ps_cmd}")
+
+      # columns/positions
+      lines = res.split("\n")
+      header = lines.shift
+      columns = header.split(" ").map {|i| i.downcase}
+
+      ps_data = []
+
+      # parse output
+      lines.each do |line|
+        continue if line.empty?
+
+        line_parts = line.split(" ")
+
+        out_line = {}
+        columns.each {|col| out_line[col] = (col == columns.last) ? line_parts.join(' ') : line_parts.shift}
+
+        command = out_line["command"]
+        env = {}
+
+        # process command and environment - the `ps` output command is still somewhat hard to 
+        # parse, especially with nested key/value pairs. he/she who does that deserve to burn
+        # in hell anyway.
+        cmd_parts = command.split(" ").reverse
+
+        buffer = []
+        while (part = cmd_parts.shift)
+          buffer << part
+
+          kv_reg_ex = /^(\w*)=(.*)$/
+          if kv_reg_ex.match part
+            m = kv_reg_ex.match(buffer.reverse.join(' '))
+
+            env[m.captures.first] = m.captures.last
+
+            buffer = []
+          end
+        end
+
+        out_line["command"] = buffer.reverse.join(' ')
+        out_line["env"] = env
+
+        ps_data << out_line
+      end
+
+      puts Yajl::Encoder.encode(ps_data)
+    end
+
+  end
+end
 
 command :destroy do |c|
   c.option '--id ID', String, 'VM ID'
