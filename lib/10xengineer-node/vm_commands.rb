@@ -234,7 +234,7 @@ command :ps do |c|
     ext_abort "No Machine ID provided" unless options.id
 
     #ps_cmd = "lxc-ps -n #{options.id} -L -f weo user,pid,ppid,%cpu,%mem,nlwp,vsz,rss,tty,stat,start,time,command"
-    ps_cmd = "lxc-ps -n #{options.id} -L -f weo uid,user,pid,ppid,%cpu,%mem,nlwp,vsz,rss,tty,stat,start,time,stime,tty,c,command"
+    ps_cmd = "lxc-ps -n #{options.id} -L -fwe -o pid,ppid,uid,user,%cpu,%mem,nlwp,vsz,rss,tty,stat,start,time,stime,tty,c,command"
 
     begin
       res = TenxEngineer::External.execute("/usr/bin/sudo #{ps_cmd}")
