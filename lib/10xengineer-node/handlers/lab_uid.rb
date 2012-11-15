@@ -1,17 +1,31 @@
 # setup default 'lab' user
 
-case @data[:shell]
+data_shell = @data[:shell] || "bash"
+
+case data_shell
 when "zsh"
 	shell = "/bin/zsh"
 when "ksh"
 	shell = "/bin/ksh"
 else
 	shell = "/bin/bash"
-else
+end
 
-TenxEngineer::External.execute("chroot #{@rootfs} useradd --create-home --uid 1000 --shell #{shell}")
+
+TenxEngineer::External.execute("chroot #{@rootfs} useradd --create-home --uid 1000 -s #{shell} lab")
 TenxEngineer::External.execute("echo \"lab:lab\" | chroot #{@rootfs} chpasswd")
 TenxEngineer::External.execute("echo \"lab:lab\" | chroot #{@rootfs} adduser lab sudo")
+
+# TODO only if no dotfiles provided
+if data_shell == "zsh"
+	zshrc_t = File.join(File.dirname(__FILE__), '../templates/zshrc.erb')
+	erb = Erubis::Eruby.new(File.read(zshrc_t))
+
+	zshrc_f = File.join(@rootfs, "/home/lab/.zshrc")
+	File.open(zshrc_f, 'w') {|f| f.write(erb.result(binding()))}
+
+	TenxEngineer::External.execute("chroot #{@rootfs} chown -R lab:lab /home/lab/.zshrc")
+end
 
 sudoers_t = File.join(File.dirname(__FILE__), '../templates/sudoers.erb')
 erb = Erubis::Eruby.new(File.read(sudoers_t))

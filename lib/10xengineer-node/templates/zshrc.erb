@@ -1,0 +1,13 @@
+# default labs .zshrc
+
+# Colors
+autoload -U colors
+colors
+setopt prompt_subst
+
+PROMPT='%m%{${fg_bold[magenta]}%} :: %{$reset_color%}%{${fg[green]}%}%3~ %}%{${reset_color}%}%# '
+
+setopt menucomplete
+
+autoload compinit
+compinit
