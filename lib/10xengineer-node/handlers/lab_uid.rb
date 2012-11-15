@@ -1,6 +1,15 @@
 # setup default 'lab' user
 
-TenxEngineer::External.execute("chroot #{@rootfs} useradd --create-home -s /bin/bash --uid 1000 lab")
+case @data[:shell]
+when "zsh"
+	shell = "/bin/zsh"
+when "ksh"
+	shell = "/bin/ksh"
+else
+	shell = "/bin/bash"
+else
+
+TenxEngineer::External.execute("chroot #{@rootfs} useradd --create-home --uid 1000 --shell #{shell}")
 TenxEngineer::External.execute("echo \"lab:lab\" | chroot #{@rootfs} chpasswd")
 TenxEngineer::External.execute("echo \"lab:lab\" | chroot #{@rootfs} adduser lab sudo")
 
