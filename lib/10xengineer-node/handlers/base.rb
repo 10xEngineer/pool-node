@@ -53,4 +53,4 @@ EOH
 File.open(motd_help_text_f, 'w') {|f| f.write(motd)}
 
 # disable password based login
-TenxEngineer::External.execute("chroot #{@rootfs} sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config")
+#TenxEngineer::External.execute("chroot #{@rootfs} sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config")
