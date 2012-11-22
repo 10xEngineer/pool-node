@@ -194,6 +194,42 @@ command :revert do |c|
   end
 end
 
+command :persist do |c|
+  c.description = "Remove existing VM snapshot"
+
+  c.option '--id ID', String, 'VM ID'
+  c.option '--name NAME', String, 'Snapshot name'
+  c.action do |args, options|
+    ext_abort "No VM ID" unless options.id
+    ext_abort "Snapshot name required" unless options.name
+
+    vm_ds = "lxc"
+    tank_ds = "tank"
+
+    id = UUID.new.generate
+
+    snapshot = Labs::Snapshots.details(options.id, options.name)
+    ext_abort "Snapshot '#{options.name}' does not exists!" unless snapshot
+
+    t_start = Time.now
+    begin
+      res = TenxEngineer::External.execute("zfs send #{vm_ds}/#{options.id}@#{options.name} | mbuffer -q -m 128MB | zfs receive #{tank_ds}/#{id}@default")
+
+      t_total = Time.now - t_start
+      puts "vm=#{options.id} snapshot=#{options.name} t_total=#{t_total} persisted"
+      Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} snapshot=#{options.name} t_total=#{t_total} persisted")
+
+      if $json
+        puts Yajl::Encoder.encode({:id => id})
+      else
+        puts "Persistent snapshot '#{id}' created."
+      end
+    rescue TenxEngineer::External::CommandFailure => e
+        ext_abort e.message
+    end
+  end
+end
+
 command :delshot do |c|
   c.description = "Remove existing VM snapshot"
 
