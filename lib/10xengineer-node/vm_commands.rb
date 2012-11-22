@@ -109,6 +109,7 @@ command :create do |c|
 
       if $json
         snapshots = Labs::Snapshots.for_machine(id)
+
         data = {
           :uuid => id,
           :state => result,
@@ -216,11 +217,14 @@ command :persist do |c|
       res = TenxEngineer::External.execute("zfs send #{vm_ds}/#{options.id}@#{options.name} | mbuffer -q -m 128MB | zfs receive #{tank_ds}/#{id}@default")
 
       t_total = Time.now - t_start
-      puts "vm=#{options.id} snapshot=#{options.name} t_total=#{t_total} persisted"
       Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} snapshot=#{options.name} t_total=#{t_total} persisted")
 
       if $json
-        puts Yajl::Encoder.encode({:id => id})
+        snapshot = Labs::Snapshots.details(nil, id)
+
+        snapshot[:id] = snapshot.delete(:name)
+
+        puts Yajl::Encoder.encode(snapshot)
       else
         puts "Persistent snapshot '#{id}' created."
       end
