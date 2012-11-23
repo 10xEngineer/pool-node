@@ -266,6 +266,36 @@ command :delshot do |c|
   end
 end
 
+command :delpshot do |c|
+  c.description = "Remove existing persistent snapshot"
+
+  c.option '--snapshot NAME', String, 'Snapshot name'
+  c.action do |args, options|
+    ext_abort "Snapshot ID required" unless options.snapshot
+
+    vm_ds = "tank"
+
+    snapshot = Labs::Snapshots.details(nil, options.snapshot)
+    ext_abort "Snapshot '#{options.name}' does not exists!" unless snapshot
+
+    t_start = Time.now
+    begin
+      res = TenxEngineer::External.execute("zfs destroy -r #{vm_ds}/#{options.snapshot}")
+
+      t_total = Time.now - t_start
+      Syslog.log(Syslog::LOG_INFO, "vm=#{options.id} snapshot=#{options.name} t_total=#{t_total} destroyed")
+
+      if $json
+        puts Yajl::Encoder.encode({})
+      else
+        puts "Snapshot '#{options.name}' destroyed."
+      end
+    rescue TenxEngineer::External::CommandFailure => e
+        ext_abort e.message
+    end
+  end
+end
+
 command :ps do |c|
   c.option '--id ID', String, 'Machine ID'
   c.action do |args, options|
