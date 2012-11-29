@@ -18,7 +18,7 @@ TenxEngineer::External.execute("echo \"lab:lab\" | chroot #{@rootfs} adduser lab
 
 # TODO only if no dotfiles provided
 if data_shell == "zsh"
-	zshrc_t = File.join(File.dirname(__FILE__), '../templates/zshrc.erb')
+	zshrc_t = File.join(File.dirname(__FILE__), '../../templates/zshrc.erb')
 	erb = Erubis::Eruby.new(File.read(zshrc_t))
 
 	zshrc_f = File.join(@rootfs, "/home/lab/.zshrc")
@@ -27,7 +27,7 @@ if data_shell == "zsh"
 	TenxEngineer::External.execute("chroot #{@rootfs} chown -R lab:lab /home/lab/.zshrc")
 end
 
-sudoers_t = File.join(File.dirname(__FILE__), '../templates/sudoers.erb')
+sudoers_t = File.join(File.dirname(__FILE__), '../../templates/sudoers.erb')
 erb = Erubis::Eruby.new(File.read(sudoers_t))
 
 suders_f = File.join(@rootfs, "/etc/sudoers")

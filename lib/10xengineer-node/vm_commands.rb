@@ -53,6 +53,16 @@ command :create do |c|
     # TODO should use zfs list -t snapshot
     raise "Template not recognized (#{options.template})" unless File.exists?(template_dir)
 
+    metadata_f = File.join(template_dir, "metadata.json")
+    metadata = {}
+
+    if File.exists?(metadata_f)
+      metadata = Yajl::Parser.parse(File.open(metadata_f))
+    else
+      # fallback to ubuntu
+      metadata["handler_class"] = "ubuntu"
+    end
+
     # create VM
     uuid = UUID.new
     id = uuid.generate
@@ -77,7 +87,7 @@ command :create do |c|
 
       # basic (/etc/network/interfaces, /etc/hostname, /etc/hosts, /etc/resolv.conf, add user)
       vm_dir = File.join(root_dir, vm_ds, id)
-      config = ConfigFactory.new(vm_dir)
+      config = ConfigFactory.new(vm_dir, metadata)
 
       # configuration handlers
       _data = Hash[*options.data.split(/[,=]/)]

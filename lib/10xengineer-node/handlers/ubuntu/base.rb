@@ -23,7 +23,7 @@ EOH
 File.open(hosts_f, 'w') {|f| f.write(hosts)}
 
 # network interfaces
-config_t = File.join(File.dirname(__FILE__), '../templates/interfaces.erb')
+config_t = File.join(File.dirname(__FILE__), '../../templates/interfaces.erb')
 erb = Erubis::Eruby.new(File.read(config_t))
 
 interfaces_f = File.join(@rootfs, "/etc/network/interfaces")
