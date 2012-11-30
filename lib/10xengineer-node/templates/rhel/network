@@ -1,0 +1,7 @@
+DEVICE=eth0
+BOOTPROTO=dhcp
+ONBOOT=yes
+HOSTNAME=<%= @data[:hostname] %>
+NM_CONTROLLED=no
+TYPE=Ethernet
+MTU=${MTU}
