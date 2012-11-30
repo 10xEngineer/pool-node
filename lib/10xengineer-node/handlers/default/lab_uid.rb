@@ -14,7 +14,12 @@ end
 
 TenxEngineer::External.execute("chroot #{@rootfs} useradd --create-home --uid 1000 -s #{shell} lab")
 TenxEngineer::External.execute("echo \"lab:lab\" | chroot #{@rootfs} chpasswd")
-TenxEngineer::External.execute("echo \"lab:lab\" | chroot #{@rootfs} adduser lab sudo")
+if data[:class] == "ubuntu"
+	TenxEngineer::External.execute("echo \"lab:lab\" | chroot #{@rootfs} adduser lab sudo")
+elsif data[:class] == "rhel"
+	TenxEngineer::External.execute("echo \"lab:lab\" | chroot #{@rootfs} groupadd sudo")
+	TenxEngineer::External.execute("echo \"lab:lab\" | chroot #{@rootfs} usermod -G sudo lab")
+end
 
 # TODO only if no dotfiles provided
 if data_shell == "zsh"

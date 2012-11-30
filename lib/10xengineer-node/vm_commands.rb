@@ -95,6 +95,7 @@ command :create do |c|
 
       # setup configuration defaults
       data[:hostname] = options.hostname
+      data[:class] = metadata["handler_class"]
 
       rand = SecureRandom.hex.scan(/.{2}/m)[0..2].join(':')
       data[:hwaddr] = "00:16:3e:#{rand}"
