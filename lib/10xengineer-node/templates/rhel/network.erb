@@ -1,7 +1,12 @@
 DEVICE=eth0
+<% if @data[:ipv4] %>
+IPADDR=<%= @data[:ipv4] %>
+NETMASK=255.240.0.0
+GATEWAY=172.16.1.1
+<% else %>
 BOOTPROTO=dhcp
+<% end %>
 ONBOOT=yes
 HOSTNAME=<%= @data[:hostname] %>
 NM_CONTROLLED=no
 TYPE=Ethernet
-MTU=${MTU}
