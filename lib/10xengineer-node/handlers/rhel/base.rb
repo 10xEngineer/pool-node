@@ -5,7 +5,7 @@ raise "hostname not provided" unless @data[:hostname]
 network_t = File.join(File.dirname(__FILE__), '../../templates/rhel/network.erb')
 erb = Erubis::Eruby.new(File.read(network_t))
 
-network_f = File.join(@rootfs, "/etc/sysconfig/network")
+network_f = File.join(@rootfs, "/etc/sysconfig/network-scripts/ifcfg-eth0")
 File.open(network_f, 'w') {|f| f.write(erb.result(binding()))}
 
 # hosts
