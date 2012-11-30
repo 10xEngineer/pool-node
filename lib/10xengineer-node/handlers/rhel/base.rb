@@ -14,7 +14,6 @@ erb = Erubis::Eruby.new(File.read(network_t))
 network_f = File.join(@rootfs, "/etc/sysconfig/network")
 File.open(network_f, 'w') {|f| f.write(erb.result(binding()))}
 
-
 # hosts
 hosts_f = File.join(@rootfs, "/etc/hosts")
 hosts = <<-EOH
@@ -29,9 +28,14 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 EOH
 
+File.open(hosts_f, 'w') {|f| f.write(hosts)}
+
 # fstab
 fstab_f = File.join(@vm_dir, "fstab")
 fstab = <<-EOH
+proc            proc         proc    nodev,noexec,nosuid 0 0
+sysfs           sys          sysfs defaults  0 0
+devtmpfs        dev          devtmpfs defaults 0 0
 EOH
 
 File.open(fstab_f, 'w') {|f| f.write(fstab)}
@@ -39,9 +43,9 @@ File.open(fstab_f, 'w') {|f| f.write(fstab)}
 # motd
 motd_help_text_f = File.join(@rootfs, "/etc/motd")
 motd = <<-EOH
-#!/bin/sh
-echo 
-echo "* Documentation & Support - http://help.10xengineer.me/"
-echo
+
+ * Documentation & Support - http://help.10xengineer.me/"
+
 EOH
 
+File.open(motd_help_text_f, 'w') {|f| f.write(motd)}
