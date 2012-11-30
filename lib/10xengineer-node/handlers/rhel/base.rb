@@ -8,6 +8,13 @@ erb = Erubis::Eruby.new(File.read(network_t))
 network_f = File.join(@rootfs, "/etc/sysconfig/network-scripts/ifcfg-eth0")
 File.open(network_f, 'w') {|f| f.write(erb.result(binding()))}
 
+network_t = File.join(File.dirname(__FILE__), '../../templates/rhel/network-base.erb')
+erb = Erubis::Eruby.new(File.read(network_t))
+
+network_f = File.join(@rootfs, "/etc/sysconfig/network")
+File.open(network_f, 'w') {|f| f.write(erb.result(binding()))}
+
+
 # hosts
 hosts_f = File.join(@rootfs, "/etc/hosts")
 hosts = <<-EOH
